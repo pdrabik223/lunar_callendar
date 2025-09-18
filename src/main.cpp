@@ -12,9 +12,6 @@ unsigned get_random_color()
     return random(1, 6);
   return random(6, 8);
 }
-// one thing is to calculate current phase of the moon
-
-// second is to calculate how high over the horizon (for poland) moon is
 
 const unsigned NO_LEDS = 8;
 
