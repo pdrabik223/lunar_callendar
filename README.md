@@ -1,6 +1,11 @@
 # Lunar calendar painting
 
-Quick lamp/painting/clock project. I have no idea how to paint so i use arduino.
+Quick lamp/painting/clock project. I have no idea how to paint so i need to use leds.
+
+# Images
+
+<img src="wiki/light.jpg" alt="Image Light" width="200"/>
+<img src="wiki/dark.jpg" alt="Image Dark" width="200"/>
 
 # Dependencies  
 
@@ -15,11 +20,19 @@ Quick lamp/painting/clock project. I have no idea how to paint so i use arduino.
 2. Addressable LED strip 
 3. Painting frame and some PLA plastic since I can not draw moon by hand
 
-# [3D models](moon_phase_lamp v5.3mf)
-Or [Autodesk Fusion repository](https://a360.co/420mgQl) 
+# 3D models 
+<img src="wiki/3d_models.png" alt="Image Dark" width="300"/>
 
-## Simple moon model and behind canvas light refusers  
-![3d models](3d_models.png)
+From the left: 
+1. Corner light diffuser, located in the frame corner behind canvas, with cutout for led strip
+2. Side light diffuser, glued to the side of the frame behind canvas
+3. My simplified depiction of the moon   
+
+All were printed with PLA and glued to the canvas.
+
+Download all as [3mf file](moon_phase_lamp_v5.3mf) or [Autodesk Fusion repository](https://a360.co/420mgQl).
+
+
 
 # Moon clock math
 
@@ -39,4 +52,6 @@ So it's simple matter of:
 
 In addition I also implemented randomized moon colors. I didn't bother simulating moon-earth-sun system, or connecting to remote api providing moon color state. I just randomized it.
 
-Source: [science.nasa.gov](https://science.nasa.gov/moon/moon-phases/) [current moon phase](https://moonphases.co.uk/)
+Source: [science.nasa.gov](https://science.nasa.gov/moon/moon-phases/) [current moon phase](https://moonphases.co.uk/) 
+
+
