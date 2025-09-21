@@ -2,6 +2,9 @@
 
 Quick lamp/painting/clock project. I have no idea how to paint so i need to use leds.
 
+
+### Assuming fool moon cycle repeats after 29.53059 days
+
 # Images
 
 <img src="wiki/light.jpg" alt="Image Light" width="200"/>
@@ -53,5 +56,4 @@ So it's simple matter of:
 In addition I also implemented randomized moon colors. I didn't bother simulating moon-earth-sun system, or connecting to remote api providing moon color state. I just randomized it.
 
 Source: [science.nasa.gov](https://science.nasa.gov/moon/moon-phases/) [current moon phase](https://moonphases.co.uk/) 
-
 
