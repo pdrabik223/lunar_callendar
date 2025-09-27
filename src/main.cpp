@@ -19,7 +19,7 @@ const CRGB moon_colors[NO_MOON_COLORS] = {
 
 const CRGB get_random_color()
 {
-  if (random(3) != 0)
+  if (random(2) != 0)
     return moon_colors[0];
   if (random(2) == 0)
     return moon_colors[random(1, 4)];
@@ -29,14 +29,14 @@ const CRGB get_random_color()
 CRGB phase_color_memory[2] = {get_random_color(), get_random_color()};
 
 const unsigned used_leds[NO_LEDS] = {
-    15, // new
-    1,  // third quarter
-    3,  // waning gibbous
-    5,  // full
-    7,  // waxing gibbous
-    9,  // first quarter
-    11, // waxing crescent
-    13, // waning crescent
+    15, // new moon
+    13, // Waxing Crescent
+    11, // first quarter
+    9,  // waxing gibbous
+    7,  // full moon
+    5,  // waning gibbous
+    3,  // last quarter
+    1,  // waning crescent
 };
 
 const CRGB dimm(const CRGB &original_color,
@@ -83,7 +83,7 @@ void test_colors()
 
 const unsigned long moon_lunar_cycle_minutes = 42524;
 
-unsigned long current_moon_lunar_cycle_minutes = 41976;
+unsigned long current_moon_lunar_cycle_minutes = 7243;
 
 double get_moon_angle()
 {
@@ -106,6 +106,9 @@ struct Phase
     dimm_level *= 1000;
     dimm_level = int(dimm_level);
     dimm_level /= 1000;
+
+    if (dimm_level < MINIMAL_BRIGHTNESS_LEVEL)
+      dimm_level = MINIMAL_BRIGHTNESS_LEVEL;
 
     if (current_moon_phase != prev_moon_phase)
     {
@@ -135,6 +138,11 @@ struct Phase
   {
     return dimm(phase_color_memory[1], dimm_level);
   }
+
+  const CRGB average_color() const
+  {
+    return avg(phase_color_memory[0], phase_color_memory[1]);
+  }
 };
 
 Phase previous_phase = Phase(0.0);
@@ -152,14 +160,13 @@ void update_leds(const Phase &phase)
 
   for (uint32_t j = 0; j < NO_LEDS; j++)
   {
-    led_strip.Set(used_leds[j],
-                  dimm(avg(phase.get_current_color(), phase.get_next_color()), MINIMAL_BRIGHTNESS_LEVEL));
+    led_strip.Set(used_leds[j], dimm(phase.average_color(), MINIMAL_BRIGHTNESS_LEVEL));
   }
 
-  led_strip.Set(used_leds[phase.get_phase(-1)], dimm(phase.get_current_color(), 0.3));
-  led_strip.Set(used_leds[phase.get_phase()], phase.get_current_color());
-  led_strip.Set(used_leds[phase.get_phase(1)], phase.get_next_color());
-  led_strip.Set(used_leds[phase.get_phase(2)], dimm(phase.get_next_color(), 0.3));
+  auto avg_color = phase.average_color();
+
+  led_strip.Set(used_leds[phase.get_phase()], dimm(avg_color, phase.dimm_level));
+  led_strip.Set(used_leds[phase.get_phase(-1)], dimm(avg_color, 1 - phase.dimm_level));
 
   for (uint32_t j = 0; j < NO_LEDS; j++)
   {
@@ -171,7 +178,7 @@ void update_leds(const Phase &phase)
 
 void setup()
 {
-  randomSeed(8713);
+  randomSeed(1337);
   led_strip.Update();
 }
 
