@@ -35,11 +35,12 @@ All were printed with PLA and glued to the canvas.
 
 Download all as [3mf file](moon_phase_lamp_v5.3mf) or [Autodesk Fusion repository](https://a360.co/420mgQl).
 
+# this project needs connection to the internet.
 
 
 # Moon clock math
 
-Full Moon cycle last ~29.53059 days, and we usually distinguish 8 different moon phases:
+Full Moon cycle last ~29.53059 days (42524.0496 minutes), and we usually distinguish 8 different moon phases:
 1. New Moon
 2. Waxing Crescent
 3. First Quarter
@@ -55,5 +56,5 @@ So it's simple matter of:
 
 In addition I also implemented randomized moon colors. I didn't bother simulating moon-earth-sun system, or connecting to remote api providing moon color state. I just randomized it.
 
-Source: [science.nasa.gov](https://science.nasa.gov/moon/moon-phases/) [current moon phase](https://moonphases.co.uk/) 
+Source: [science.nasa.gov](https://science.nasa.gov/moon/moon-phases/) [current moon phase](https://moonphases.co.uk/) [www.moongiant.com](https://www.moongiant.com/phase/today/)
 

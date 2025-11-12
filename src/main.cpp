@@ -5,7 +5,7 @@ LedStrip<5> led_strip(16);
 
 const unsigned NO_LEDS = 8;
 const unsigned NO_MOON_COLORS = 6;
-const double MINIMAL_BRIGHTNESS_LEVEL = 0.1;
+const double MINIMAL_BRIGHTNESS_LEVEL = 0.06;
 const unsigned long DELAY = 60000; // wait 60s
 
 const CRGB moon_colors[NO_MOON_COLORS] = {
@@ -19,11 +19,11 @@ const CRGB moon_colors[NO_MOON_COLORS] = {
 
 const CRGB get_random_color()
 {
-  if (random(2) != 0)
-    return moon_colors[0];
-  if (random(2) == 0)
-    return moon_colors[random(1, 4)];
-  return moon_colors[random(4, 6)];
+  // if (random(2) != 0)
+  // return moon_colors[0];
+  // if (random(2) == 0)
+  // return moon_colors[random(1, 4)];
+  return moon_colors[random(0, 6)];
 }
 
 CRGB phase_color_memory[2] = {get_random_color(), get_random_color()};
@@ -83,7 +83,7 @@ void test_colors()
 
 const unsigned long moon_lunar_cycle_minutes = 42524;
 
-unsigned long current_moon_lunar_cycle_minutes = 7243;
+unsigned long current_moon_lunar_cycle_minutes = 14361;
 
 double get_moon_angle()
 {
@@ -106,6 +106,12 @@ struct Phase
     dimm_level *= 1000;
     dimm_level = int(dimm_level);
     dimm_level /= 1000;
+
+    Serial.println("dimm_level:");
+    Serial.println(dimm_level);
+
+    Serial.println("current_moon_phase:");
+    Serial.println(current_moon_phase);
 
     if (dimm_level < MINIMAL_BRIGHTNESS_LEVEL)
       dimm_level = MINIMAL_BRIGHTNESS_LEVEL;
@@ -165,6 +171,8 @@ void update_leds(const Phase &phase)
 
   auto avg_color = phase.average_color();
 
+  
+
   led_strip.Set(used_leds[phase.get_phase()], dimm(avg_color, phase.dimm_level));
   led_strip.Set(used_leds[phase.get_phase(-1)], dimm(avg_color, 1 - phase.dimm_level));
 
@@ -178,7 +186,8 @@ void update_leds(const Phase &phase)
 
 void setup()
 {
-  randomSeed(1337);
+  randomSeed(69);
+  Serial.begin(9600);
   led_strip.Update();
 }
 
