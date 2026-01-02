@@ -12,16 +12,19 @@ Quick lamp/painting/clock project. I have no idea how to paint so i need to use 
 
 # Dependencies  
 
-1. Install [platformio](https://platformio.org/) vs code extension
-
-2. Open lunar_calendar as PlatformIo project dependencies will be automatically installed
-    - fastled/FastLED@^3.5.0
+In submodules
 
 # Hardware 
 
-1. Project is based on Arduino UNO (Rev 3)
-2. Addressable LED strip 
-3. Painting frame and some PLA plastic since I can not draw moon by hand
+1. Addressable LED strip 
+2. Painting frame and some PLA plastic since I can not draw moon by hand
+3. Board [Raspberry Pi Pico 2 W](https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html#pico-2-technical-specification)
+
+    [Pinout](./doc/pico-2-w-pinout.pdf) 
+
+    [Micropython download](https://micropython.org/download/RPI_PICO2_W/) or use [v1.25.0](./doc/RPI_PICO2_W-20250326-v1.25.0-preview.408.gf315a376b.uf2)
+
+
 
 # 3D models 
 <img src="wiki/3d_models.png" alt="Image Dark" width="300"/>
@@ -34,8 +37,6 @@ From the left:
 All were printed with PLA and glued to the canvas.
 
 Download all as [3mf file](moon_phase_lamp_v5.3mf) or [Autodesk Fusion repository](https://a360.co/420mgQl).
-
-# this project needs connection to the internet.
 
 
 # Moon clock math
