@@ -1,3 +1,4 @@
+import random
 import time
 import utime
 from pi_pico_neopixel_tools.color import Color
@@ -25,8 +26,21 @@ NEW_MOON,WAXING_CRESCENT,FIRST_QUARTER,WAXING_GIBBOUS,FULL_MOON,WANING_GIBBOUS,L
 moon_phases_string = [   
 "🌑 New Moon","🌒 Waxing Crescent","🌓 First Quarter","🌔 Waxing Gibbous","🌕 Full Moon","🌖 Waning Gibbous","🌗 Last Quarter","🌘 Waning Gibbous"
 ]
-
-    
+moon_colors_rgb = [
+    Color(220, 223, 230),  # silvery white
+    Color(240, 224, 160),  # pale yellow
+    Color(255, 204, 102),  # golden
+    Color(255, 165, 70),   # orange
+    Color(178, 72, 56),    # reddish
+    Color(184, 115, 51),   # copper
+    Color(169, 169, 169),  # gray
+    Color(188, 198, 204),  # ashen
+    Color(173, 216, 230),  # blue tint
+    Color(147, 112, 219),  # purple – medium
+    Color(186, 85, 211),   # purple – soft orchid
+    Color(255, 182, 193),  # pink – light
+    Color(255, 105, 180)   # pink – hot pink
+]
 led_strip = LedStrip(16, 22)
 app = App(hostname="lunar_calendar.local")
 rtc = RTC()
@@ -41,8 +55,10 @@ known_moon_phase_and_time = (
 seconds_in_day = 86400
 uptime_minutes = 0
 led_color = Color.white()
-is_color_random = True
+is_color_random = False
 is_night_mode = False
+
+current_phase = 4
 
 night_mode_start = (0,0,0,23,59,0,0,0)
 night_mode_end = (0,0,0,5,30,0,0,0)
@@ -109,13 +125,13 @@ def home_page(cl: socket.socket, parameters: dict):
     "uptime":get_operation_time(uptime_minutes),
     "brightness" : brightness,
     "color" : get_hex_color(led_color),
-    "is_color_random" :  "true" if is_color_random else "false",
-    "is_night_mode_on": "true" if is_night_mode else "false",
+    "is_color_random":  "checked" if is_color_random else "",
+    "is_night_mode_on": "checked" if is_night_mode else "",
     "night_mode_start":get_hour_and_minute(night_mode_start),
     "night_mode_end":get_hour_and_minute(night_mode_end),
     }
 )))
-
+    
 def save_settings(cl: socket.socket, parameters: dict):
     
     global brightness
@@ -124,9 +140,7 @@ def save_settings(cl: socket.socket, parameters: dict):
     global is_night_mode
     global night_mode_start
     global night_mode_end
-    
-    print(parameters)
-    
+        
     brightness = int(parameters.get('brightness', brightness))
 
     if brightness < 0: brightness = 0
@@ -136,7 +150,7 @@ def save_settings(cl: socket.socket, parameters: dict):
                                      "true" if is_color_random else "false") == "true"
     
     is_night_mode = parameters.get('isNightMode', 
-                                     "true" if is_color_random else "false") == "true"
+                                     "true" if is_night_mode else "false") == "true"
     
     new_color_str = parameters.get('color', get_hex_color(led_color))
     
@@ -174,11 +188,19 @@ def night_mode():
 def display_moon_phase(phase: int):
     global led_color
     global brightness
-
+    global current_phase
+    global is_color_random
+    
     led_strip.fill(Color.black())
     
+    
+    if current_phase != phase:
+        current_phase = phase
+        if is_color_random:
+            led_color = random.choice(moon_colors_rgb)
     if night_mode():
         return
+    
     
     led_strip.set_pixel(phase, led_color, brightness)
 
@@ -219,9 +241,9 @@ def animation():
     
 if __name__ == "__main__":
     # print(get_hex_color(led_color))
-  
-    
     synch_time(rtc)
+    random.seed(utime.localtime()[4] * 60 + utime.localtime()[5])
+    
     _thread.start_new_thread(animation, ())
     app.register_endpoint("/v1", home_page)
     app.register_endpoint("/v1/save_settings", save_settings)
