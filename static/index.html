@@ -1,18 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="UTF-8">
+    <title>🌙Lunar Calendar</title>
 
-    <title>Rpi pi pico w</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #302b63;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+
+        .info-group {
+            margin-bottom: 25px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #24243e;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+
+        .info-value {
+            background: linear-gradient(135deg, #f5f5f5, #eeeeee);
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: #302b63;
+            font-size: 1.1em;
+            border-left: 4px solid #302b63;
+        }
+
+        input[type="color"] {
+            width: 60px;
+            height: 50px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #e0e0e0;
+            outline: none;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #302b63;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #302b63;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            color: #302b63;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .controls-group {
+            background: linear-gradient(135deg, #f5f5f5, #eeeeee);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            margin-bottom: 0;
+        }
+
+        .save-button {
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #302b63, #24243e);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .save-button:active {
+            transform: translateY(0);
+        }
+    </style>
 </head>
 
 <body>
-    <H1>Body of index page</H1>
+    <div class="container">
+        <h1>🌙 Lunar Calendar</h1>
+
+        <div class="info-group">
+            <div class="info-label">Current Time</div>
+            <div class="info-value">{{local_time}}</div>
+        </div>
+
+        <div class="info-group">
+            <div class="info-label">Lunar Phase</div>
+            <div class="info-value">{{lunar_phase}}</div>
+        </div>
+
+        <div class="info-group">
+            <div class="info-label">Uptime</div>
+            <div class="info-value">{{uptime}}</div>
+        </div>
+
+        <div class="info-group" style="margin-bottom: 15px;">
+            <div class="info-label">Brightness Level</div>
+            <input type="range" id="brightnesSlider" min="0" max="255" step="1" value="{{brightness}}" />
+        </div>
+
+        <div class="info-group" style="margin-bottom: 15px;">
+            <div class="info-label">Moon Color</div>
+
+            <div class="color-picker-wrapper">
+                <input type="color" id="colorPicker" value="{{color}}" />
+            </div>
+
+        </div>
+
+        <div class="info-group">
+            <div class="info-label">Random Color Mode</div>
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="colorModeToggle" checked="{{is_color_random}}" />
+                <label for="colorModeToggle" class="checkbox-label">Enable Random Colors</label>
+            </div>
+        </div>
+
+        <button style="margin-bottom: 15px;" class="save-button" onclick="saveSettings()">💾 Save Settings</button>
+        <button class="save-button" onclick="window.location.reload();">🔄 Reload Page</button>
+    </div>
+
+    <script>
+
+        const colorPicker = document.getElementById('colorPicker');
+        const brightnessSlider = document.getElementById('brightnesSlider');
+        const colorModeToggle = document.getElementById('colorModeToggle');
+
+        // Save settings to server
+        function saveSettings() {
+            const brightness = brightnessSlider.value;
+            const color = String(colorPicker.value).replace('#', '');
+            const isColorRandom = colorModeToggle.checked;
+
+            fetch(`/v1/save_settings?color=${color}&isColorRandom=${isColorRandom}&brightness=${brightness}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            }).then(data => {
+                alert('✅ Settings saved successfully!');
+            }).catch(error => {
+                alert('❌ Error saving settings: ' + error + "\nquery: " + `/v1/save_settings?brightness=${brightness}&color=${color}&isColorRandom=${isColorRandom}`);
+            });
+        }
+
+    </script>
 </body>
 
 </html>
