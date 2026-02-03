@@ -10,6 +10,8 @@ import ntptime
 from machine import RTC
 import _thread
 
+
+# 
 NEW_MOON = 15 #ok
 WAXING_CRESCENT = 13
 FIRST_QUARTER = 11
@@ -24,8 +26,9 @@ NEW_MOON,WAXING_CRESCENT,FIRST_QUARTER,WAXING_GIBBOUS,FULL_MOON,WANING_GIBBOUS,L
 ]
 
 moon_phases_string = [   
-"🌑 New Moon","🌒 Waxing Crescent","🌓 First Quarter","🌔 Waxing Gibbous","🌕 Full Moon","🌖 Waning Gibbous","🌗 Last Quarter","🌘 Waning Gibbous"
+"🌑 New Moon","🌒 Waxing Crescent","🌓 First Quarter","🌔 Waxing Gibbous","🌕 Full Moon","🌖 Waning Gibbous","🌗 Last Quarter","🌘 Waning Crescent"
 ]
+
 moon_colors_rgb = [
     Color(220, 223, 230),  # silvery white
     Color(240, 224, 160),  # pale yellow
@@ -49,8 +52,8 @@ rtc = RTC()
 brightness = 255
 moon_cycle_length_days = 29.53059
 known_moon_phase_and_time = (
-4,  # FULL_MOON
-(2026,2,1,23,9,0,0,0)
+0, # index of the phase in moon phases array, corresponds to New Moon 
+(2026,1,18,20,52,0,0,0)
 )
 seconds_in_day = 86400
 uptime_minutes = 0
@@ -122,6 +125,7 @@ def home_page(cl: socket.socket, parameters: dict):
     cl.sendall(compose_response(response=format_dict(load_html("static/index.html"),{
     "local_time" : time_str(),
     "lunar_phase" : moon_phases_string[current_moon_phase_id()],
+    "moon_age": (datetime_diff_seconds(utime.localtime(), known_moon_phase_and_time[1]) / seconds_in_day) % moon_cycle_length_days,
     "uptime":get_operation_time(uptime_minutes),
     "brightness" : brightness,
     "color" : get_hex_color(led_color),
@@ -222,10 +226,30 @@ def synch_time(rtc, timezone_offset = 1):
     tm[6] + 1,        # weekday (1–7)
     tm[3], tm[4], tm[5], 0
 ))
-    
+lunar_phases = [
+    (0, 1),
+    (1, 6.38),
+    (6.39, 8.38),
+    (8.39, 13.76),
+    (13.77, 15.76),
+    (15.77, 21.14),
+    (21.15, 23.14),
+    (23.15, 28.53),
+    (28.54, 29.53)
+]
+
+def get_phase_id(lunar_age):
+ 
+    for id, (start, end) in enumerate(lunar_phases):
+        if start <= lunar_age <= end:
+            return id % 8 
+        
 def current_moon_phase_id():
     global known_moon_phase_and_time
-    offset = int((datetime_diff_seconds(utime.localtime(), known_moon_phase_and_time[1]) / seconds_in_day) % moon_cycle_length_days)
+    
+    moon_age = (datetime_diff_seconds(utime.localtime(), known_moon_phase_and_time[1]) / seconds_in_day) % moon_cycle_length_days
+    offset = get_phase_id(moon_age)
+    
     return (known_moon_phase_and_time[0] + offset) % len(moon_phases)
 
 
