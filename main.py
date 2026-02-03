@@ -42,7 +42,36 @@ seconds_in_day = 86400
 uptime_minutes = 0
 led_color = Color.white()
 is_color_random = True
+is_night_mode = False
 
+night_mode_start = (0,0,0,23,59,0,0,0)
+night_mode_end = (0,0,0,5,30,0,0,0)
+
+def parse_hour_and_minute(data:str):
+    data = data.split(":")
+    hour = int(data[0])
+    minute = int(data[1])
+    
+    return (0,0,0,hour,minute,0,0,0)
+
+
+def get_hour_and_minute(timestamp:tuple):
+    hour = timestamp[3]
+    minute = timestamp[4]
+    
+    if hour < 10:
+        hour = f"0{hour}"
+    else:
+        hour = f"{hour}"
+    
+    if minute < 10:
+        minute = f"0{minute}"
+    else:
+        minute = f"{minute}"
+    
+    return f"{hour}:{minute}"
+    
+    
 def hexify(num):
     return f"{num:02x}"
 
@@ -80,7 +109,11 @@ def home_page(cl: socket.socket, parameters: dict):
     "uptime":get_operation_time(uptime_minutes),
     "brightness" : brightness,
     "color" : get_hex_color(led_color),
-    "is_color_random" :  "true" if is_color_random else "false",} 
+    "is_color_random" :  "true" if is_color_random else "false",
+    "is_night_mode_on": "true" if is_night_mode else "false",
+    "night_mode_start":get_hour_and_minute(night_mode_start),
+    "night_mode_end":get_hour_and_minute(night_mode_end),
+    }
 )))
 
 def save_settings(cl: socket.socket, parameters: dict):
@@ -88,6 +121,9 @@ def save_settings(cl: socket.socket, parameters: dict):
     global brightness
     global led_color
     global is_color_random
+    global is_night_mode
+    global night_mode_start
+    global night_mode_end
     
     print(parameters)
     
@@ -96,17 +132,54 @@ def save_settings(cl: socket.socket, parameters: dict):
     if brightness < 0: brightness = 0
     if brightness > 255: brightness = 255
     
-    new_color_str = parameters.get('color', get_hex_color(led_color))
-    color = tuple(int(new_color_str[i:i+2], 16) for i in (0, 2, 4))
-    led_color = Color(*color)
     is_color_random = parameters.get('isColorRandom', 
                                      "true" if is_color_random else "false") == "true"
     
+    is_night_mode = parameters.get('isNightMode', 
+                                     "true" if is_color_random else "false") == "true"
+    
+    new_color_str = parameters.get('color', get_hex_color(led_color))
+    
+    led_color = Color(*tuple(int(new_color_str[i:i+2], 16) for i in (0, 2, 4)))
+    
+    night_mode_start = parse_hour_and_minute(parameters.get("nightModeStart", get_hour_and_minute(night_mode_start)))
+    
+    night_mode_end = parse_hour_and_minute(parameters.get("nightModeEnd", get_hour_and_minute(night_mode_end)))
+    
     display_moon_phase(moon_phases[current_moon_phase_id()])
     cl.sendall(compose_response())
+
+
+def night_mode():
+    global night_mode_start
+    global night_mode_end
+    global is_night_mode
     
+    if not is_night_mode: return
+    current_time = utime.localtime()
+
+    current = current_time[3] * 60 + current_time[4]
+     
+    start = night_mode_start[3] * 60 + night_mode_start[4]
+    end = night_mode_end[3] * 60 + night_mode_end[4]
+    
+    if end < start:
+        return not(current < start  and current > end)
+        
+    if current > start and current < end:
+        return True
+    
+    return False
+
 def display_moon_phase(phase: int):
+    global led_color
+    global brightness
+
     led_strip.fill(Color.black())
+    
+    if night_mode():
+        return
+    
     led_strip.set_pixel(phase, led_color, brightness)
 
 
@@ -129,6 +202,7 @@ def synch_time(rtc, timezone_offset = 1):
 ))
     
 def current_moon_phase_id():
+    global known_moon_phase_and_time
     offset = int((datetime_diff_seconds(utime.localtime(), known_moon_phase_and_time[1]) / seconds_in_day) % moon_cycle_length_days)
     return (known_moon_phase_and_time[0] + offset) % len(moon_phases)
 
@@ -145,6 +219,8 @@ def animation():
     
 if __name__ == "__main__":
     # print(get_hex_color(led_color))
+  
+    
     synch_time(rtc)
     _thread.start_new_thread(animation, ())
     app.register_endpoint("/v1", home_page)
