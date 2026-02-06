@@ -59,3 +59,7 @@ In addition I also implemented randomized moon colors. I didn't bother simulatin
 
 Source: [science.nasa.gov](https://science.nasa.gov/moon/moon-phases/) [current moon phase](https://moonphases.co.uk/) [www.moongiant.com](https://www.moongiant.com/phase/today/)
 
+# ToDo:
+- operating time display is broken
+- add live device clock display
+- add fancy animation 
