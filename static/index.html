@@ -31,7 +31,6 @@
             padding: 40px;
             max-width: 500px;
             width: 100%;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         h1 {
@@ -51,7 +50,6 @@
             color: #24243e;
             font-size: 0.95em;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
             margin-bottom: 8px;
             opacity: 0.8;
         }
@@ -130,14 +128,6 @@
             cursor: pointer;
         }
 
-        .controls-group {
-            background: linear-gradient(135deg, #f5f5f5, #eeeeee);
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            margin-bottom: 0;
-        }
-
         .save-button {
             width: 100%;
             padding: 12px 20px;
@@ -149,6 +139,8 @@
             font-weight: 600;
             cursor: pointer;
             margin-top: 20px;
+            margin-bottom: 15px;
+
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
@@ -168,7 +160,7 @@
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 1em;
-            color: #302b63;
+            color: #c9c9c9;
         }
 
         input[type="number"]:focus {
@@ -187,12 +179,6 @@
 
         .night-mode-controls.visible {
             display: block;
-        }
-
-        .time-inputs-wrapper {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
         }
 
         .time-input-group {
@@ -240,13 +226,6 @@
             flex-wrap: nowrap;
         }
 
-        .footer-info {
-            font-size: 0.9em;
-            color: #24243e;
-            opacity: 0.7;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
 
         .footer-credits {
             font-size: 0.8em;
@@ -287,6 +266,11 @@
         </div>
 
         <div class="info-group" style="margin-bottom: 15px;">
+            <div class="info-label">Animation Timeout</div>
+            <input type="number" id="animationTimeout" min="0" max="3600" value="{{animation_timeout}}" />
+        </div>
+
+        <div class="info-group" style="margin-bottom: 15px;">
             <div class="info-label">Moon Color</div>
             <div class="checkbox-wrapper">
                 <input type="checkbox" id="colorModeToggle" {{is_color_random}} />
@@ -304,103 +288,127 @@
                 <label for="nightModeToggle" class="checkbox-label">Enable Night Mode</label>
             </div>
             <div class="night-mode-controls" id="nightModeControls">
-                <div class="time-inputs-wrapper">
-                    <div class="time-input-group">
-                        <label>Start time</label>
-                        <input type="time" id="nightModeStart" name="start_time" value="{{night_mode_start}}">
-                    </div>
-                    <div class="time-input-group">
-                        <label>End time</label>
-                        <input type="time" id="nightModeEnd" name="end_time" value="{{night_mode_end}}">
-                    </div>
+                <div class="time-input-group">
+                    <label>Start time</label>
+                    <input type="time" id="nightModeStart" name="start_time" value="{{night_mode_start}}">
+                </div>
+                <div class="time-input-group">
+                    <label>End time</label>
+                    <input type="time" id="nightModeEnd" name="end_time" value="{{night_mode_end}}">
+                </div>
+
+                <div class="info-group" style="margin-bottom: 15px;">
+                    <div class="info-label">Brightness Level</div>
+                    <input type="range" id="nightModeBrightnesSlider" min="0" max="255" step="1"
+                        value="{{night_mode_brightness}}" />
                 </div>
             </div>
         </div>
 
-        <button style="margin-bottom: 15px;" class="save-button" onclick="saveSettings()">💾 Save Settings</button>
-        <button class="save-button" onclick="window.location.reload();">🔄 Reload Page</button>
+        <button class="save-button" onclick="saveSettings()">💾 Save Settings</button>
+        <button class="save-button" onclick="window.location.reload();">🔄 Reload Page</butto n>
+            <button class="save-button" onclick="runAnimation()">▶️ Run Animation</button>
 
-        <div class="footer">
+            <div class="footer">
 
-            <div class="footer-links">
-                <a href="https://github.com/pdrabik223/lunar_callendar" target="_blank">📖 GitHub</a>
-                <a href="https://www.timeanddate.com/moon/phases/" target="_blank">🌙 Moon Phases Reference</a>
-            </div>
+                <div class="footer-links">
+                    <a href="https://github.com/pdrabik223/lunar_callendar" target="_blank">📖 GitHub</a>
+                    <a href="https://www.timeanddate.com/moon/phases/" target="_blank">🌙 Moon Phases Reference</a>
+                </div>
 
-            <div class="footer-credits">
-                To align with visual aesthetics, this tool assigns a two-day duration to the New and Full Moon phases,
-                rather than treating them as the instantaneous astronomical events they technically are.
                 <div class="footer-credits">
-                    Powered by Raspberry Pi Pico W • v1.0.1
+                    To align with visual aesthetics, this tool assigns a two-day duration to the New and Full Moon
+                    phases,
+                    rather than treating them as the instantaneous astronomical events they technically are.
+                    <div class="footer-credits">
+                        Powered by Raspberry Pi Pico W • v1.0.3
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <script>
+            <script>
+                const animationTimeoutInput = document.getElementById('animationTimeout');
 
-            const colorPicker = document.getElementById('colorPicker');
-            const brightnessSlider = document.getElementById('brightnesSlider');
-            const colorModeToggle = document.getElementById('colorModeToggle');
-            const colorPickerSection = document.getElementById('colorPickerSection');
+                const colorPicker = document.getElementById('colorPicker');
+                const brightnessSlider = document.getElementById('brightnesSlider');
+                const colorModeToggle = document.getElementById('colorModeToggle');
 
-            const nightModeToggle = document.getElementById('nightModeToggle');
-            const nightModeControls = document.getElementById('nightModeControls');
-            const nightModeStart = document.getElementById('nightModeStart');
-            const nightModeEnd = document.getElementById('nightModeEnd');
+                const colorPickerSection = document.getElementById('colorPickerSection');
 
-            // Toggle color picker visibility
-            function toggleColorPicker() {
-                if (colorModeToggle.checked) {
-                    colorPickerSection.classList.add('hidden');
-                } else {
-                    colorPickerSection.classList.remove('hidden');
+                const nightModeToggle = document.getElementById('nightModeToggle');
+                const nightModeControls = document.getElementById('nightModeControls');
+                const nightModeStart = document.getElementById('nightModeStart');
+                const nightModeEnd = document.getElementById('nightModeEnd');
+                const nightModeBrightnessSlider = document.getElementById('nightModeBrightnesSlider');
+
+                // Toggle color picker visibility
+                function toggleColorPicker() {
+                    if (colorModeToggle.checked) {
+                        colorPickerSection.classList.add('hidden');
+                    } else {
+                        colorPickerSection.classList.remove('hidden');
+                    }
                 }
-            }
 
-            // Event listener for color mode checkbox
-            colorModeToggle.addEventListener('change', toggleColorPicker);
+                // Event listener for color mode checkbox
+                colorModeToggle.addEventListener('change', toggleColorPicker);
 
-            // Initialize color picker visibility on page load
-            toggleColorPicker();
+                // Initialize color picker visibility on page load
+                toggleColorPicker();
 
-            // Toggle night mode controls visibility
-            function toggleNightModeControls() {
-                if (nightModeToggle.checked) {
-                    nightModeControls.classList.add('visible');
-                } else {
-                    nightModeControls.classList.remove('visible');
+                // Toggle night mode controls visibility
+                function toggleNightModeControls() {
+                    if (nightModeToggle.checked) {
+                        nightModeControls.classList.add('visible');
+                    } else {
+                        nightModeControls.classList.remove('visible');
+                    }
                 }
-            }
 
-            // Event listener for night mode checkbox
-            nightModeToggle.addEventListener('change', toggleNightModeControls);
+                // Event listener for night mode checkbox
+                nightModeToggle.addEventListener('change', toggleNightModeControls);
 
-            // Initialize night mode controls visibility on page load
-            toggleNightModeControls();
+                // Initialize night mode controls visibility on page load
+                toggleNightModeControls();
 
-            // Save settings to server
-            function saveSettings() {
-                const brightness = brightnessSlider.value;
-                const color = String(colorPicker.value).replace('#', '');
-                const isColorRandom = colorModeToggle.checked;
-                const isNightMode = nightModeToggle.checked;
-                const nightModeStartHour = nightModeStart.value;
-                const nightModeEndHour = nightModeEnd.value;
+                // Save settings to server
+                function saveSettings() {
+                    const animationTimeout = animationTimeoutInput.value;
+                    const brightness = brightnessSlider.value;
+                    const color = String(colorPicker.value).replace('#', '');
+                    const isColorRandom = colorModeToggle.checked;
+                    const isNightMode = nightModeToggle.checked;
+                    const nightModeStartHour = nightModeStart.value;
+                    const nightModeEndHour = nightModeEnd.value;
+                    const nightModeBrightness = nightModeBrightnessSlider.value;
 
+                    fetch(`/v1/save_settings?color=${color}&isColorRandom=${isColorRandom}&brightness=${brightness}&isNightMode=${isNightMode}&nightModeStart=${nightModeStartHour}&nightModeEnd=${nightModeEndHour}&nightModeBrightness=${nightModeBrightness}&animationTimeout=${animationTimeout}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
 
-                fetch(`/v1/save_settings?color=${color}&isColorRandom=${isColorRandom}&brightness=${brightness}&isNightMode=${isNightMode}&nightModeStart=${nightModeStartHour}&nightModeEnd=${nightModeEndHour}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                }).then(data => {
-                    alert('✅ Settings saved successfully!');
-                }).catch(error => {
-                    alert('❌ Error saving settings: ' + error + "\nquery: " + `/v1/save_settings?brightness=${brightness}&color=${color}&isColorRandom=${isColorRandom}`);
-                });
-            }
+                    }).then(data => {
+                        alert('✅ Settings saved successfully!');
+                    }).catch(error => {
+                        alert('❌ Error saving settings: ' + error + "\nquery: " + `/v1/save_settings?brightness=${brightness}&color=${color}&isColorRandom=${isColorRandom}`);
+                    });
+                }
 
-        </script>
+                function runAnimation() {
+                    fetch(`/v1/run_animation`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+
+                    }).then(data => {
+                        console.log(data);
+                    }).catch(error => {
+                        alert('❌ Error animation: ' + error + "\nquery: " + `/v1/run_animation`)
+                    });
+                }
+            </script>
 </body>
 
 </html>
