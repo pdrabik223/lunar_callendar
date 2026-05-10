@@ -271,6 +271,11 @@
         </div>
 
         <div class="info-group" style="margin-bottom: 15px;">
+            <div class="info-label">DNS</div>
+            <input type="text" id="centralUrl" placeholder="https://google.com" value="{{central_url}}" />
+        </div>
+
+        <div class="info-group" style="margin-bottom: 15px;">
             <div class="info-label">Moon Color</div>
             <div class="checkbox-wrapper">
                 <input type="checkbox" id="colorModeToggle" {{is_color_random}} />
@@ -380,9 +385,10 @@
                     const isNightMode = nightModeToggle.checked;
                     const nightModeStartHour = nightModeStart.value;
                     const nightModeEndHour = nightModeEnd.value;
+                    const centralUrl = document.getElementById('centralUrl').value;
                     const nightModeBrightness = nightModeBrightnessSlider.value;
 
-                    fetch(`/v1/save_settings?color=${color}&isColorRandom=${isColorRandom}&brightness=${brightness}&isNightMode=${isNightMode}&nightModeStart=${nightModeStartHour}&nightModeEnd=${nightModeEndHour}&nightModeBrightness=${nightModeBrightness}&animationTimeout=${animationTimeout}`, {
+                    fetch(`/v1/save_settings?color=${color}&isColorRandom=${isColorRandom}&brightness=${brightness}&isNightMode=${isNightMode}&nightModeStart=${nightModeStartHour}&nightModeEnd=${nightModeEndHour}&nightModeBrightness=${nightModeBrightness}&animationTimeout=${animationTimeout}&central_url=${centralUrl}`, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json'
