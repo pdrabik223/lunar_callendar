@@ -400,7 +400,8 @@ import urequests as requests
 def refresh_connection_to_central():
     try:
         res = requests.get(
-            url=f"{central_url}?host_name={app.hostname}&ip={app.ip}", timeout=3
+            url=f"{central_url}?host_name={app.hostname}&ip={app.ip}&activation_endpoint=/v1/run_animation",
+            timeout=3,
         )
         res.close()
         gc.collect()
