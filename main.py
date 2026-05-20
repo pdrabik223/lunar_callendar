@@ -2,6 +2,7 @@ import gc
 from math import floor
 import random
 import time
+
 import utime
 from pi_pico_neopixel_tools.color import Color
 from pi_pico_w_server_tools.app import App, compose_response, format_dict, load_html
@@ -12,6 +13,8 @@ from pi_pico_neopixel_tools.led_strip import LedStrip
 import ntptime
 from machine import RTC
 import _thread
+
+import requests
 
 NEW_MOON = 15  # ok
 WAXING_CRESCENT = 13
@@ -77,6 +80,7 @@ led_strip = LedStrip(16, 22)
 app = App(hostname="lunar_calendar.local")
 rtc = RTC()
 
+is_connected_to_central = False
 is_animation_on = False
 animation_timeout = 5  # in minutes
 animation_timer = 0
@@ -98,7 +102,7 @@ current_phase = 1
 night_mode_start = (0, 0, 0, 23, 59, 0, 0, 0)
 night_mode_end = (0, 0, 0, 5, 30, 0, 0, 0)
 
-central_url: str = "https://google.com"
+central_url: str = "http://192.168.1.14/v1/connect"
 
 
 def parse_hour_and_minute(data: str):
@@ -185,11 +189,15 @@ def home_page(cl: socket.socket, parameters: dict):
                     "night_mode_start": get_hour_and_minute(night_mode_start),
                     "is_color_random": "checked" if is_color_random else "",
                     "is_night_mode_on": "checked" if is_night_mode else "",
+                    "is_connected_to_central": (
+                        "Connected" if is_connected_to_central else "No connection"
+                    ),
                     "night_mode_start": get_hour_and_minute(night_mode_start),
                     "night_mode_end": get_hour_and_minute(night_mode_end),
                     "night_mode_brightness": brightness_night_mode,
                 },
-            )
+            ),
+            content_type="text/html; charset=utf-8",
         )
     )
 
@@ -394,19 +402,23 @@ def run_animation(cl: socket.socket, parameters: dict):
     cl.sendall(compose_response())
 
 
-import urequests as requests
-
-
-def refresh_connection_to_central():
+def refresh_connection_to_central() -> bool:
+    global is_connected_to_central
     try:
         res = requests.get(
-            url=f"{central_url}?host_name={app.hostname}&ip={app.ip}&endpoint=/v1/run_animation",
-            timeout=3,
+            url=f"{central_url}?host_name={app.hostname}&ip={app.ip}&redirect_endpoint=/v1/run_animation",
+            timeout=5,
         )
         res.close()
         gc.collect()
+        is_connected_to_central = True
+        
+        return True
     except Exception as err:
-        print(err)
+        is_connected_to_central = False
+        
+        print(f"error:{str(err)}")
+        return False
 
 
 if __name__ == "__main__":
