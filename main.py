@@ -25,6 +25,8 @@ WANING_GIBBOUS = 5
 LAST_QUARTER = 3
 WANING_CRESCENT = 1
 
+OFF = 0
+
 moon_phases = [
     NEW_MOON,
     WAXING_CRESCENT,
@@ -103,6 +105,32 @@ night_mode_start = (0, 0, 0, 23, 59, 0, 0, 0)
 night_mode_end = (0, 0, 0, 5, 30, 0, 0, 0)
 
 central_url: str = "http://192.168.1.14/v1/connect"
+
+
+class Calendar:
+
+    currentState: int = OFF
+
+    def __init__(self):
+        self.state = OFF
+
+    def displayState(self, newState: int):
+        if self.state == newState:
+            return
+
+        if newState == OFF:
+            led_strip.fill(Color.black())
+            self.state = OFF
+            return
+
+        if self.state == OFF:
+            loading_animation(newState)
+
+        display_moon_phase(moon_phases[current_moon_phase_id()])
+        self.state = newState
+
+
+calendar = Calendar()
 
 
 def parse_hour_and_minute(data: str):
@@ -368,16 +396,11 @@ def current_moon_phase_id():
 def update_leds():
     global animation_timeout
     global animation_timer
-    global is_animation_on
 
     if animation_timer < animation_timeout:
-        if not is_animation_on:
-            loading_animation(moon_phases[current_moon_phase_id()])
-        display_moon_phase(moon_phases[current_moon_phase_id()])
-        is_animation_on = True
+        calendar.displayState(moon_phases[current_moon_phase_id()])
     else:
-        led_strip.fill(Color.black())
-        is_animation_on = False
+        calendar.displayState(OFF)
 
 
 def animation():
@@ -385,9 +408,9 @@ def animation():
 
     while 1 < 2:
         for _ in range(24):
-            for _ in range(60):
+            for _ in range(15):
                 refresh_connection_to_central()
-                for _ in range(60):
+                for _ in range(240):  # every 4 min refresh connection
                     update_leds()
                     animation_timer += 1
                     time.sleep(1)
@@ -412,18 +435,18 @@ def refresh_connection_to_central() -> bool:
         res.close()
         gc.collect()
         is_connected_to_central = True
-        
+
         return True
     except Exception as err:
         is_connected_to_central = False
-        
+
         print(f"error:{str(err)}")
         return False
 
 
 if __name__ == "__main__":
 
-    synch_time(rtc)
+    synch_time(rtc, timezone_offset=2)  # we have summertime now :c
     random.seed(utime.localtime()[4] * 60 + utime.localtime()[5])
     _thread.start_new_thread(animation, ())
 
